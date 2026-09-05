@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeSEVEN Player</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header com imagem -->
+  <header class="topo">
+    <img src="banner1.png" alt="Banner principal">
+  </header>
+
+  <!-- Player com botões -->
+  <main class="player-area">
+    <button id="prevBtn" class="nav-btn">⟨</button>
+    <div id="video-player"></div>
+    <button id="nextBtn" class="nav-btn">⟩</button>
+  </main>
+
+  <!-- Rodapé -->
+  <footer class="rodape">
+    <p>@CodeSEVEN</p>
+  </footer>
+
+  <script>
+    const API_KEY = "AIzaSyBjVfiftNR2aEkpIZuD7KWaja-m54Tvcrk";
+    const CHANNEL_ID = "UC1lpYWsktxbf0grdR2K_pUw";
+    let videos = [];
+    let currentIndex = 0;
+
+    async function carregarVideos() {
+      try {
+        // Buscar playlist de uploads
+        const channelUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${CHANNEL_ID}&key=${API_KEY}`;
+        const channelRes = await fetch(channelUrl);
+        const channelData = await channelRes.json();
+        const uploadsPlaylistId = channelData.items[0].contentDetails.relatedPlaylists.uploads;
+
+        // Buscar vídeos da playlist
+        const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=20&key=${API_KEY}`;
+        const playlistRes = await fetch(playlistUrl);
+        const playlistData = await playlistRes.json();
+
+        videos = playlistData.items.map(item => item.snippet.resourceId.videoId);
+
+        // Escolher vídeo aleatório para começar
+        currentIndex = Math.floor(Math.random() * videos.length);
+        mostrarVideo(currentIndex);
+      } catch (error) {
+        console.error("Erro ao carregar vídeos:", error);
+      }
+    }
+
+    function mostrarVideo(index) {
+      const player = document.getElementById("video-player");
+      const videoId = videos[index];
+      player.innerHTML = `
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
+      `;
+    }
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentIndex = (currentIndex + 1) % videos.length;
+      mostrarVideo(currentIndex);
+    });
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      currentIndex = (currentIndex - 1 + videos.length) % videos.length;
+      mostrarVideo(currentIndex);
+    });
+
+    carregarVideos();
+  </script>
+</body>
+</html>
