@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todos os Vídeos - CodeSEVEN</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>Todos os Vídeos do Canal CodeSEVEN</h1>
+  </header>
+
+  <main class="corpo" id="video-list"></main>
+
+  <footer class="rodape">
+    <p>@CodeSEVEN</p>
+  </footer>
+
+  <script>
+    const API_KEY = "AIzaSyBjVfiftNR2aEkpIZuD7KWaja-m54Tvcrk";
+    const CHANNEL_ID = "UC1lpYWsktxbf0grdR2K_pUw";
+
+    async function carregarTodosVideos() {
+      const channelUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${CHANNEL_ID}&key=${API_KEY}`;
+      const channelRes = await fetch(channelUrl);
+      const channelData = await channelRes.json();
+      const uploadsPlaylistId = channelData.items[0].contentDetails.relatedPlaylists.uploads;
+
+      const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=50&key=${API_KEY}`;
+      const playlistRes = await fetch(playlistUrl);
+      const playlistData = await playlistRes.json();
+
+      const container = document.getElementById("video-list");
+      container.innerHTML = "";
+
+      playlistData.items.forEach(item => {
+        const videoId = item.snippet.resourceId.videoId;
+        const quadro = document.createElement("div");
+        quadro.className = "quadro";
+        quadro.innerHTML = `
+          <iframe width="300" height="200" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
+        `;
+        container.appendChild(quadro);
+      });
+    }
+
+    carregarTodosVideos();
+  </script>
+</body>
+</html>
